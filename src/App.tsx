@@ -8,18 +8,122 @@ import { SummaryView } from './components/SummaryView';
 import { AddTravelView } from './components/AddTravelView';
 import { TravelHistory } from './components/TravelHistory';
 import { ImportFlights } from './components/ImportFlights';
+import { AdminDashboard } from './components/AdminDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { Plane, Calendar, BarChart3, Plus, LogOut, Globe, History } from 'lucide-react';
+import { Plane, Calendar, BarChart3, Plus, LogOut, Globe, History, ShieldCheck, Home, Hotel } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+function LoadingScreen() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 0.5));
+    }, 20);
+    return () => clearInterval(interval);
+  }, []);
+
+  const t = progress / 100;
+  const p0 = { x: 40, y: 120 };
+  const p1 = { x: 160, y: 20 };
+  const p2 = { x: 280, y: 120 };
+
+  const x = Math.pow(1 - t, 2) * p0.x + 2 * (1 - t) * t * p1.x + Math.pow(t, 2) * p2.x;
+  const y = Math.pow(1 - t, 2) * p0.y + 2 * (1 - t) * t * p1.y + Math.pow(t, 2) * p2.y;
+
+  const dx = 2 * (1 - t) * (p1.x - p0.x) + 2 * t * (p2.x - p1.x);
+  const dy = 2 * (1 - t) * (p1.y - p0.y) + 2 * t * (p2.y - p1.y);
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-slate-50 text-slate-900 overflow-hidden">
+      <div className="relative z-10 flex flex-col items-center gap-16">
+        <div className="relative w-96 h-48">
+          <svg className="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 320 160">
+            <path
+              d={`M ${p0.x} ${p0.y} Q ${p1.x} ${p1.y} ${p2.x} ${p2.y}`}
+              fill="none"
+              stroke="#e2e8f0"
+              strokeWidth="2"
+              strokeDasharray="4 4"
+            />
+            
+            <motion.path
+              d={`M ${p0.x} ${p0.y} Q ${p1.x} ${p1.y} ${p2.x} ${p2.y}`}
+              fill="none"
+              stroke="url(#gradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="400"
+              animate={{ strokeDashoffset: 400 - (400 * progress) / 100 }}
+              transition={{ ease: "linear", duration: 0.1 }}
+            />
+
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="100%" stopColor="#2563eb" />
+              </linearGradient>
+            </defs>
+
+            <motion.g
+              animate={{ x, y, rotate: angle + 45 }}
+              transition={{ ease: "linear", duration: 0.05 }}
+            >
+              <Plane 
+                className="w-8 h-8 -translate-x-4 -translate-y-4 text-blue-600 drop-shadow-[0_4px_6px_rgba(59,130,246,0.3)]" 
+                fill="currentColor" 
+              />
+            </motion.g>
+          </svg>
+
+          <div className="absolute left-0 bottom-0 -translate-x-1/2 translate-y-1/2 flex flex-col items-center gap-2">
+            <div className="bg-white p-3 rounded-2xl border border-slate-200 text-blue-600 shadow-sm">
+              <Home className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Origin</span>
+          </div>
+
+          <div className="absolute right-0 bottom-0 translate-x-1/2 translate-y-1/2 flex flex-col items-center gap-2">
+            <div className="bg-white p-3 rounded-2xl border border-slate-200 text-blue-600 shadow-sm">
+              <Hotel className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Arrival</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-center space-y-1">
+            <h3 className="text-lg font-medium tracking-[0.2em] uppercase text-slate-900">Preparing Journey</h3>
+            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Synchronizing travel data...</p>
+          </div>
+          
+          <div className="relative w-64 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <motion.div 
+              className="absolute inset-y-0 left-0 bg-blue-600"
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: "linear" }}
+            />
+          </div>
+          <span className="text-[10px] font-mono text-blue-600 font-bold">{Math.round(progress)}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [segments, setSegments] = useState<TravelSegment[]>([]);
+  const isAdmin = user?.email === 'xiaoxia3691158@gmail.com';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        travelService.syncUser(user);
+      }
       setUser(user);
       setLoading(false);
     });
@@ -87,16 +191,7 @@ export default function App() {
   const handleLogout = () => auth.signOut();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        >
-          <Plane className="w-8 h-8 text-blue-600" />
-        </motion.div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
@@ -164,6 +259,12 @@ export default function App() {
                 <History className="w-4 h-4 mr-2" />
                 History
               </TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value="admin" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-blue-600 data-[state=active]:text-blue-700">
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Admin
+                </TabsTrigger>
+              )}
             </TabsList>
             
             <ImportFlights onImported={() => {}} />
@@ -209,6 +310,18 @@ export default function App() {
                   <TravelHistory segments={segments} />
                 </motion.div>
               </TabsContent>
+
+              {isAdmin && (
+                <TabsContent key="admin" value="admin">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                  >
+                    <AdminDashboard />
+                  </motion.div>
+                </TabsContent>
+              )}
             </AnimatePresence>
         </Tabs>
       </main>

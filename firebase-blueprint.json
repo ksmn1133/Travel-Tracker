@@ -1,5 +1,19 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
     "TravelSegment": {
       "title": "Travel Segment",
       "description": "A record of a travel journey from one country to another.",
@@ -37,6 +51,10 @@
     }
   },
   "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles and roles."
+    },
     "/travelSegments/{segmentId}": {
       "schema": "TravelSegment",
       "description": "Collection of travel segments for all users."

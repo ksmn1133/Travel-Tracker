@@ -7,7 +7,9 @@ import {
   deleteDoc, 
   doc, 
   updateDoc,
-  getDocs
+  getDocs,
+  setDoc,
+  getDoc
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { TravelSegment } from '../types';
@@ -64,8 +66,35 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 const COLLECTION_NAME = 'travelSegments';
+const USERS_COLLECTION = 'users';
 
 export const travelService = {
+  async syncUser(user: any) {
+    const userRef = doc(db, USERS_COLLECTION, user.uid);
+    const path = `${USERS_COLLECTION}/${user.uid}`;
+    
+    try {
+      const userDoc = await getDoc(userRef);
+      
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        lastLogin: new Date().toISOString(),
+        role: user.email === 'xiaoxia3691158@gmail.com' ? 'admin' : 'user'
+      };
+
+      if (!userDoc.exists()) {
+        await setDoc(userRef, userData);
+      } else {
+        await updateDoc(userRef, userData);
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    }
+  },
+
   async addSegment(segment: Omit<TravelSegment, 'id' | 'userId' | 'createdAt'>) {
     if (!auth.currentUser) throw new Error('User not authenticated');
     
@@ -115,5 +144,31 @@ export const travelService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, path);
     }
+  },
+
+  subscribeToAllSegments(callback: (segments: TravelSegment[]) => void) {
+    const path = COLLECTION_NAME;
+    return onSnapshot(collection(db, path), (snapshot) => {
+      const segments = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as TravelSegment[];
+      callback(segments);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, path);
+    });
+  },
+
+  subscribeToUsers(callback: (users: any[]) => void) {
+    const path = USERS_COLLECTION;
+    return onSnapshot(collection(db, path), (snapshot) => {
+      const users = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      callback(users);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, path);
+    });
   }
 };

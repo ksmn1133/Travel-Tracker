@@ -49,6 +49,14 @@ service cloud.firestore {
              isValidDateString(data.createdAt);
     }
 
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role', 'lastLogin']) &&
+             data.uid is string && data.uid == request.auth.uid &&
+             data.email is string && data.email.size() < 100 &&
+             data.role in ['user', 'admin'] &&
+             isValidDateString(data.lastLogin);
+    }
+
     function isAdmin() {
       return isAuthenticated() &&
         (request.auth.token.email == "xiaoxia3691158@gmail.com" && request.auth.token.email_verified == true);
@@ -58,8 +66,17 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) &&
+                      (request.resource.data.role == 'user' || (request.resource.data.role == 'admin' && isAdmin()));
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+    }
+
     match /travelSegments/{segmentId} {
       allow read: if isDocOwner() || isAdmin();
+      allow list: if isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidTravelSegment(request.resource.data);
       allow update: if isDocOwner() && isValidTravelSegment(request.resource.data) && 
                       request.resource.data.userId == resource.data.userId;
