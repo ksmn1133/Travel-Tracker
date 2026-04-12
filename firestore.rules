@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: travelSegments
+    // Document ID: auto-generated
+    // Fields:
+    //   - departureCountry: string (required) - Country of departure
+    //   - departureDate: string (required, ISO 8601) - Date of departure
+    //   - arrivalCountry: string (required) - Country of arrival
+    //   - arrivalDate: string (required, ISO 8601) - Date of arrival
+    //   - userId: string (required) - Owner's UID
+    //   - createdAt: string (required, ISO 8601) - Creation timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function isValidTravelSegment(data) {
+      return data.keys().hasAll(['departureCountry', 'departureDate', 'arrivalCountry', 'arrivalDate', 'userId', 'createdAt']) &&
+             data.keys().hasOnly(['departureCountry', 'departureDate', 'arrivalCountry', 'arrivalDate', 'userId', 'createdAt']) &&
+             data.departureCountry is string && data.departureCountry.size() > 0 && data.departureCountry.size() < 100 &&
+             data.arrivalCountry is string && data.arrivalCountry.size() > 0 && data.arrivalCountry.size() < 100 &&
+             isValidDateString(data.departureDate) &&
+             isValidDateString(data.arrivalDate) &&
+             data.userId is string && data.userId == request.auth.uid &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email == "xiaoxia3691158@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /travelSegments/{segmentId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidTravelSegment(request.resource.data);
+      allow update: if isDocOwner() && isValidTravelSegment(request.resource.data) && 
+                      request.resource.data.userId == resource.data.userId;
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

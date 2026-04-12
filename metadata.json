@@ -1,0 +1,5 @@
+{
+  "name": "TravelTrack",
+  "description": "A comprehensive travel tracking app with calendar views, country summaries, and automated flight record import.",
+  "requestFramePermissions": ["geolocation"]
+}

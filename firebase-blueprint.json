@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "TravelSegment": {
+      "title": "Travel Segment",
+      "description": "A record of a travel journey from one country to another.",
+      "type": "object",
+      "properties": {
+        "departureCountry": {
+          "type": "string",
+          "description": "The country the user is leaving from."
+        },
+        "departureDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of departure."
+        },
+        "arrivalCountry": {
+          "type": "string",
+          "description": "The country the user is arriving in."
+        },
+        "arrivalDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time of arrival."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this record."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the record was created."
+        }
+      },
+      "required": ["departureCountry", "departureDate", "arrivalCountry", "arrivalDate", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/travelSegments/{segmentId}": {
+      "schema": "TravelSegment",
+      "description": "Collection of travel segments for all users."
+    }
+  }
+}
