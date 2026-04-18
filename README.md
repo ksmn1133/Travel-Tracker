@@ -1,7 +1,7 @@
 
 
 #Self Intro
-大家好我是Shawn Xiao, 前四大个税组员工。因为工作涉及到global mobility的个税，所以开发了这款个税相关的app。希望各位前辈多给提提意见。
+大家好我是Shawn Xiao, 前四大个税组员工。因为工作涉及到global mobility的个税，Vibe coding 开发了这款个税相关的app。希望各位前辈多给提提意见。
 目前在看新的职业发展机会，希望大佬可以捞一下我。💗 邮箱xx627085476@outlook.com
 
 #业务逻辑 Pending
