@@ -9,9 +9,10 @@ import { AddTravelView } from './components/AddTravelView';
 import { TravelHistory } from './components/TravelHistory';
 import { ImportFlights } from './components/ImportFlights';
 import { AdminDashboard } from './components/AdminDashboard';
+import { TaxCalculator } from './components/TaxCalculator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { Plane, Calendar, BarChart3, Plus, LogOut, Globe, History, ShieldCheck, Home, Hotel } from 'lucide-react';
+import { Plane, Calendar, BarChart3, Plus, LogOut, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 function LoadingScreen() {
@@ -259,6 +260,10 @@ export default function App() {
                 <History className="w-4 h-4 mr-2" />
                 History
               </TabsTrigger>
+              <TabsTrigger value="tax" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <Calculator className="w-4 h-4 mr-2" />
+                Tax
+              </TabsTrigger>
               {isAdmin && (
                 <TabsTrigger value="admin" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm text-blue-600 data-[state=active]:text-blue-700">
                   <ShieldCheck className="w-4 h-4 mr-2" />
@@ -308,6 +313,16 @@ export default function App() {
                   exit={{ opacity: 0, x: 20 }}
                 >
                   <TravelHistory segments={segments} />
+                </motion.div>
+              </TabsContent>
+
+              <TabsContent key="tax" value="tax">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                >
+                  <TaxCalculator />
                 </motion.div>
               </TabsContent>
 
