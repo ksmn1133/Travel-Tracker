@@ -45,8 +45,11 @@ export function CalendarView({ segments }: CalendarViewProps) {
   const dailyLocations = useMemo(() => calculateDailyLocations(segments), [segments]);
 
   const locationMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    dailyLocations.forEach(dl => { map[dl.date] = dl.country; });
+    const map: Record<string, string[]> = {};
+    dailyLocations.forEach(dl => {
+      if (!map[dl.date]) map[dl.date] = [];
+      if (!map[dl.date].includes(dl.country)) map[dl.date].push(dl.country);
+    });
     return map;
   }, [dailyLocations]);
 
@@ -57,8 +60,8 @@ export function CalendarView({ segments }: CalendarViewProps) {
     if (viewMode === 'month') {
       const prefix = format(currentMonth, 'yyyy-MM');
       const counts: Record<string, number> = {};
-      (Object.entries(locationMap) as [string, string][]).forEach(([date, country]) => {
-        if (date.startsWith(prefix)) counts[country] = (counts[country] || 0) + 1;
+      Object.entries(locationMap).forEach(([date, countries]) => {
+        if (date.startsWith(prefix)) countries.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
       });
       return Object.entries(counts)
         .map(([country, days]) => ({ country, days }))
@@ -82,16 +85,17 @@ export function CalendarView({ segments }: CalendarViewProps) {
     [filteredStats],
   );
 
-  /* ── trip list for sidebar ── */
+  /* ── stays list for sidebar ── */
   const filteredTrips = useMemo(() => {
     return [...segments]
       .filter(s => {
-        const d = new Date(s.arrivalDate);
+        // departureDate = arrival in country (start of stay)
+        const d = new Date(s.departureDate);
         if (viewMode === 'month')
           return d.getFullYear() === currentYear && d.getMonth() === currentMonth.getMonth();
         return d.getFullYear() === currentYear;
       })
-      .sort((a, b) => new Date(b.arrivalDate).getTime() - new Date(a.arrivalDate).getTime());
+      .sort((a, b) => new Date(b.departureDate).getTime() - new Date(a.departureDate).getTime());
   }, [segments, viewMode, currentYear, currentMonth]);
 
   /* ── navigation ── */
@@ -117,7 +121,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
       ];
       eachDayOfInterval({ start: monthStart, end: monthEnd }).forEach(date => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        calRows.push([dateStr, format(date, 'EEEE'), locationMap[dateStr] ?? '']);
+        calRows.push([dateStr, format(date, 'EEEE'), (locationMap[dateStr] ?? []).join(', ')]);
       });
       const calSheet = XLSX.utils.aoa_to_sheet(calRows);
       calSheet['!cols'] = [{ wch: 14 }, { wch: 12 }, { wch: 24 }];
@@ -135,22 +139,24 @@ export function CalendarView({ segments }: CalendarViewProps) {
       summarySheet['!cols'] = [{ wch: 22 }, { wch: 22 }, { wch: 26 }, { wch: 14 }];
       XLSX.utils.book_append_sheet(wb, summarySheet, 'Country Summary');
 
-      /* ── Sheet 3: Trip Records ── */
+      /* ── Sheet 3: Stays Records ── */
       if (filteredTrips.length > 0) {
         const tripRows: (string | number)[][] = [
-          ['Departure Date', 'Arrival Date', 'From', 'To'],
+          ['Country', 'Arrival Date', 'Departure Date', 'Duration (days)'],
         ];
         filteredTrips.forEach(t => {
+          const arrival   = parseISO(t.departureDate);
+          const departure = parseISO(t.arrivalDate);
           tripRows.push([
-            format(parseISO(t.departureDate), 'yyyy-MM-dd'),
-            format(parseISO(t.arrivalDate),   'yyyy-MM-dd'),
-            t.departureCountry,
             t.arrivalCountry,
+            format(arrival,   'yyyy-MM-dd'),
+            format(departure, 'yyyy-MM-dd'),
+            Math.round((departure.getTime() - arrival.getTime()) / 86400000),
           ]);
         });
         const tripSheet = XLSX.utils.aoa_to_sheet(tripRows);
-        tripSheet['!cols'] = [{ wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 22 }];
-        XLSX.utils.book_append_sheet(wb, tripSheet, 'Trip Records');
+        tripSheet['!cols'] = [{ wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, tripSheet, 'Stays Records');
       }
 
       XLSX.writeFile(wb, `travel-${format(currentMonth, 'yyyy-MM')}.xlsx`);
@@ -164,7 +170,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
       ];
       eachDayOfInterval({ start: yearStart, end: yearEnd }).forEach(date => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        calRows.push([dateStr, MONTH_NAMES[date.getMonth()], format(date, 'EEEE'), locationMap[dateStr] ?? '']);
+        calRows.push([dateStr, MONTH_NAMES[date.getMonth()], format(date, 'EEEE'), (locationMap[dateStr] ?? []).join(', ')]);
       });
       const calSheet = XLSX.utils.aoa_to_sheet(calRows);
       calSheet['!cols'] = [{ wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 24 }];
@@ -203,22 +209,24 @@ export function CalendarView({ segments }: CalendarViewProps) {
       monthlySheet['!cols'] = [{ wch: 14 }, { wch: 22 }, { wch: 10 }];
       XLSX.utils.book_append_sheet(wb, monthlySheet, 'Monthly Breakdown');
 
-      /* ── Sheet 4: Trip Records ── */
+      /* ── Sheet 4: Stays Records ── */
       if (filteredTrips.length > 0) {
         const tripRows: (string | number)[][] = [
-          ['Departure Date', 'Arrival Date', 'From', 'To'],
+          ['Country', 'Arrival Date', 'Departure Date', 'Duration (days)'],
         ];
         filteredTrips.forEach(t => {
+          const arrival   = parseISO(t.departureDate);
+          const departure = parseISO(t.arrivalDate);
           tripRows.push([
-            format(parseISO(t.departureDate), 'yyyy-MM-dd'),
-            format(parseISO(t.arrivalDate),   'yyyy-MM-dd'),
-            t.departureCountry,
             t.arrivalCountry,
+            format(arrival,   'yyyy-MM-dd'),
+            format(departure, 'yyyy-MM-dd'),
+            Math.round((departure.getTime() - arrival.getTime()) / 86400000),
           ]);
         });
         const tripSheet = XLSX.utils.aoa_to_sheet(tripRows);
-        tripSheet['!cols'] = [{ wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 22 }];
-        XLSX.utils.book_append_sheet(wb, tripSheet, 'Trip Records');
+        tripSheet['!cols'] = [{ wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 18 }];
+        XLSX.utils.book_append_sheet(wb, tripSheet, 'Stays Records');
       }
 
       XLSX.writeFile(wb, `travel-${currentYear}.xlsx`);
@@ -235,13 +243,28 @@ export function CalendarView({ segments }: CalendarViewProps) {
     setIsSaving(true);
     try {
       const dateStr = format(quickEditDate, 'yyyy-MM-dd');
-      const prevCountry = locationMap[dateStr] || 'Unknown';
+      const prevCountry = locationMap[dateStr]?.[0] || 'Unknown';
+      const overrideStart = startOfDay(quickEditDate);
+      const overrideEnd   = addMinutes(overrideStart, 1);
+
+      // Override segment: covers this day at midnight → assigns quickEditCountry to this day
       await travelService.addSegment({
-        departureCountry: prevCountry,
+        departureCountry: quickEditCountry.trim(),
         arrivalCountry: quickEditCountry.trim(),
-        departureDate: startOfDay(quickEditDate).toISOString(),
-        arrivalDate: addMinutes(startOfDay(quickEditDate), 1).toISOString(),
+        departureDate: overrideStart.toISOString(),
+        arrivalDate: overrideEnd.toISOString(),
       });
+
+      // Restoration segment: immediately after, restores the original country so that
+      // the fallback logic in calculateDailyLocations does NOT cascade the override
+      // to subsequent days.
+      await travelService.addSegment({
+        departureCountry: quickEditCountry.trim(),
+        arrivalCountry: prevCountry,
+        departureDate: overrideEnd.toISOString(),
+        arrivalDate: addMinutes(overrideEnd, 1).toISOString(),
+      });
+
       setQuickEditDate(null);
     } catch (err) { console.error('Quick edit failed', err); }
     finally { setIsSaving(false); }
@@ -343,7 +366,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
 
         {/* Tab switcher */}
         <div className="flex border-b border-slate-100 shrink-0">
-          {([['chart', 'By Country'], ['trips', 'Trip List']] as const).map(([tab, label]) => (
+          {([['chart', 'By Country'], ['trips', 'Stays List']] as const).map(([tab, label]) => (
             <button
               key={tab}
               onClick={() => setSideTab(tab)}
@@ -612,27 +635,33 @@ function CountryChart({
   );
 }
 
-/* ══ Trip list ═════════════════════════════════════════════════ */
+/* ══ Stays list ════════════════════════════════════════════════ */
 function TripList({ trips }: { trips: TravelSegment[] }) {
   if (trips.length === 0)
-    return <p className="text-slate-400 text-xs text-center py-8">No trips in this period.</p>;
+    return <p className="text-slate-400 text-xs text-center py-8">No stays in this period.</p>;
 
   return (
     <div className="space-y-2">
-      {trips.map(t => (
-        <div
-          key={t.id}
-          className="flex gap-2.5 p-2.5 rounded-lg border border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-colors"
-        >
-          <div className="w-1 rounded-full bg-blue-400 shrink-0 self-stretch" />
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-slate-800 truncate">{t.arrivalCountry}</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">
-              {format(parseISO(t.arrivalDate), 'MMM d')} ← {t.departureCountry}
-            </p>
+      {trips.map(t => {
+        // departureDate = arrival in country; arrivalDate = departure from country
+        const arrivalInCountry     = parseISO(t.departureDate);
+        const departureFromCountry = parseISO(t.arrivalDate);
+        const nights = Math.round((departureFromCountry.getTime() - arrivalInCountry.getTime()) / 86400000);
+        return (
+          <div
+            key={t.id}
+            className="flex gap-2.5 p-2.5 rounded-lg border border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-colors"
+          >
+            <div className="w-1 rounded-full bg-blue-400 shrink-0 self-stretch" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-slate-800 truncate">{t.arrivalCountry}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                {format(arrivalInCountry, 'MMM d')} – {format(departureFromCountry, 'MMM d')} · {nights} day{nights !== 1 ? 's' : ''}
+              </p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -646,7 +675,7 @@ function MonthView({
   onQuickEdit,
 }: {
   currentMonth: Date;
-  locationMap: Record<string, string>;
+  locationMap: Record<string, string[]>;
   selectedDate: Date | null;
   onSelectDate: (d: Date) => void;
   onQuickEdit: (d: Date, country: string) => void;
@@ -669,16 +698,16 @@ function MonthView({
         ))}
         {days.map((date) => {
           const dateStr     = format(date, 'yyyy-MM-dd');
-          const country     = locationMap[dateStr];
+          const countries   = locationMap[dateStr] ?? [];
           const isSelected  = selectedDate ? isSameDay(date, selectedDate) : false;
           const isTodayDate = isToday(date);
           return (
             <button
               key={dateStr}
               onClick={() => onSelectDate(date)}
-              onContextMenu={e => { e.preventDefault(); onQuickEdit(date, country || 'Unknown'); }}
+              onContextMenu={e => { e.preventDefault(); onQuickEdit(date, countries[0] || 'Unknown'); }}
               className={[
-                'h-20 flex flex-col items-start p-1.5 gap-1 text-left transition-colors border-b border-r border-slate-50',
+                'h-20 flex flex-col items-start p-1.5 gap-0.5 text-left transition-colors border-b border-r border-slate-50',
                 isSelected
                   ? 'bg-blue-600'
                   : isTodayDate
@@ -689,13 +718,13 @@ function MonthView({
               <span className={`text-[11px] font-semibold ${isSelected ? 'text-blue-100' : isTodayDate ? 'text-blue-600' : 'text-slate-500'}`}>
                 {format(date, 'd')}
               </span>
-              {country && (
-                <span className={`text-[9px] font-medium truncate w-full rounded px-1 py-0.5 leading-tight ${
+              {countries.map(c => (
+                <span key={c} className={`text-[9px] font-medium truncate w-full rounded px-1 py-0.5 leading-tight ${
                   isSelected ? 'bg-blue-500 text-blue-100' : 'bg-blue-100 text-blue-700'
                 }`}>
-                  {country}
+                  {c}
                 </span>
-              )}
+              ))}
             </button>
           );
         })}
@@ -707,7 +736,7 @@ function MonthView({
 /* ══ Year view ═════════════════════════════════════════════════ */
 function YearView({
   year, locationMap, onDayClick,
-}: { year: number; locationMap: Record<string, string>; onDayClick: (d: Date) => void }) {
+}: { year: number; locationMap: Record<string, string[]>; onDayClick: (d: Date) => void }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {Array.from({ length: 12 }, (_, i) => (
@@ -720,7 +749,7 @@ function YearView({
 /* ══ Mini month ════════════════════════════════════════════════ */
 interface MiniMonthProps {
   year: number; month: number;
-  locationMap: Record<string, string>;
+  locationMap: Record<string, string[]>;
   onDayClick: (d: Date) => void;
 }
 const MiniMonth: React.FC<MiniMonthProps> = ({ year, month, locationMap, onDayClick }) => {
@@ -739,13 +768,14 @@ const MiniMonth: React.FC<MiniMonthProps> = ({ year, month, locationMap, onDayCl
         {Array.from({ length: prefix }).map((_, i) => <div key={`b-${i}`} />)}
         {days.map(date => {
           const dateStr     = format(date, 'yyyy-MM-dd');
-          const hasTravel   = !!locationMap[dateStr];
+          const countries   = locationMap[dateStr] ?? [];
+          const hasTravel   = countries.length > 0;
           const isTodayDate = isToday(date);
           return (
             <button
               key={dateStr}
               onClick={() => onDayClick(date)}
-              title={locationMap[dateStr]}
+              title={countries.join(', ')}
               className={[
                 'w-full aspect-square rounded-sm text-[8px] font-medium flex items-center justify-center transition-colors',
                 isTodayDate ? 'bg-blue-600 text-white'

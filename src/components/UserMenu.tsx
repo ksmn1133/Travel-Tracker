@@ -300,7 +300,7 @@ export function UserMenu({ user, onLogout }: Props) {
             <div className="space-y-1.5">
               <p className="font-medium text-slate-800">{t('Quick Guide', '快速指南')}</p>
               <ul className="space-y-1 list-disc list-inside text-slate-500">
-                <li>{t('Add travel records via the "Add Record" tab', '在"添加记录"选项卡中添加出行记录')}</li>
+                <li>{t('Add stays records via the "Add Stays" tab', '在"添加住宿"选项卡中添加住宿记录')}</li>
                 <li>{t('View your calendar to see China vs. overseas days', '在日历中查看境内外天数')}</li>
                 <li>{t('Use the Tax tab to calculate IIT', '在税务选项卡中计算个税')}</li>
                 <li>{t('Export the official declaration form as Excel', '导出官方申报表为Excel')}</li>

@@ -16,6 +16,7 @@ import { Plane, Calendar, Plus, Globe, History, ShieldCheck, Home, Hotel, Calcul
 import { motion, AnimatePresence } from 'motion/react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { calculateDailyLocations } from './lib/travel-utils';
+import { eachDayOfInterval, parseISO, format as dateFormat } from 'date-fns';
 
 function LoadingScreen() {
   const [progress, setProgress] = useState(0);
@@ -135,25 +136,42 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [bellOpen]);
 
-  const warningCountries = React.useMemo(() => {
+  const warnings = React.useMemo(() => {
     if (!segments.length) return [];
-    const today = new Date();
-    const todayStr = today.toISOString().slice(0, 10);
-    const cutoff = new Date(today);
-    cutoff.setDate(cutoff.getDate() - 364); // last 365 days inclusive
-    const cutoffStr = cutoff.toISOString().slice(0, 10);
 
-    const dailyLocations = calculateDailyLocations(segments);
-    const counts: Record<string, number> = {};
-    dailyLocations.forEach(({ date, country }) => {
-      if (date >= cutoffStr && date <= todayStr) {
-        counts[country] = (counts[country] || 0) + 1;
-      }
+    // Count UNIQUE days per (year, country) directly from raw segments.
+    // Using a Set per (year, country) prevents double-counting overlapping records.
+    const tally: Record<string, Record<string, Set<string>>> = {};
+
+    segments.forEach(segment => {
+      const country = segment.arrivalCountry;
+      const start = parseISO(segment.departureDate); // arrival in country
+      const end   = parseISO(segment.arrivalDate);   // departure from country
+
+      // guard: start must be <= end
+      if (start > end) return;
+
+      eachDayOfInterval({ start, end }).forEach(day => {
+        const year    = dateFormat(day, 'yyyy');
+        const dateStr = dateFormat(day, 'yyyy-MM-dd');
+        if (!tally[year]) tally[year] = {};
+        if (!tally[year][country]) tally[year][country] = new Set();
+        tally[year][country].add(dateStr);
+      });
     });
-    return Object.entries(counts)
-      .filter(([, days]) => days >= 160 && days <= 183)
-      .map(([country, days]) => ({ country, days }))
-      .sort((a, b) => b.days - a.days);
+
+    // Emit an alert for every (year, country) pair that exceeds 150 unique days
+    const results: { year: string; country: string; days: number }[] = [];
+    Object.entries(tally).forEach(([year, countrySets]) => {
+      Object.entries(countrySets).forEach(([country, dateSet]) => {
+        if (dateSet.size > 150) results.push({ year, country, days: dateSet.size });
+      });
+    });
+
+    // Most recent year first, then most days first
+    return results.sort((a, b) =>
+      b.year.localeCompare(a.year) || b.days - a.days
+    );
   }, [segments]);
 
   useEffect(() => {
@@ -272,8 +290,10 @@ function App() {
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                {warningCountries.length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
+                {warnings.length > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1 leading-none">
+                    {warnings.length}
+                  </span>
                 )}
               </button>
 
@@ -286,17 +306,15 @@ function App() {
                     </button>
                   </div>
 
-                  {warningCountries.length === 0 ? (
+                  {warnings.length === 0 ? (
                     <p className="px-4 py-5 text-sm text-slate-500 text-center">No alerts at this time.</p>
                   ) : (
                     <ul className="divide-y divide-slate-100">
-                      {warningCountries.map(({ country, days }) => (
-                        <li key={country} className="flex gap-3 px-4 py-3">
-                          <span className="mt-0.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                      {warnings.map(({ year, country, days }) => (
+                        <li key={`${year}-${country}`} className="flex gap-3 px-4 py-3">
+                          <span className="mt-1 w-2 h-2 rounded-full bg-red-500 shrink-0" />
                           <p className="text-sm text-slate-700">
-                            <span className="font-semibold">{country}:</span> You have spent{' '}
-                            <span className="font-semibold text-red-600">{days} days</span> this year.
-                            Your residency days in that country is approaching 183 days. It may affect your tax residency in that country.
+                            Please plan your travel in {country} in {year} (Already Spent {days} days).
                           </p>
                         </li>
                       ))}
@@ -320,7 +338,7 @@ function App() {
               </TabsTrigger>
 <TabsTrigger value="add" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Record
+                Add Stays
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 <History className="w-4 h-4 mr-2" />
@@ -342,7 +360,7 @@ function App() {
           </div>
 
             <AnimatePresence mode="wait">
-              <TabsContent key="calendar" value="calendar">
+              <TabsContent key="calendar" value="calendar" keepMounted>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -362,7 +380,7 @@ function App() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent key="history" value="history">
+              <TabsContent key="history" value="history" keepMounted>
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}

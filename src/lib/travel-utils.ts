@@ -13,8 +13,9 @@ export function calculateDailyLocations(segments: TravelSegment[]): DailyLocatio
   
   // We need a start and end range. Let's use the first departure and last arrival.
   const start = parseISO(sortedSegments[0].departureDate);
-  const lastArrival = parseISO(sortedSegments[sortedSegments.length - 1].arrivalDate);
-  const end = lastArrival > startOfDay(new Date()) ? lastArrival : startOfDay(new Date());
+  // Use the latest arrivalDate across ALL segments, not just the last by departureDate
+  const maxArrival = new Date(Math.max(...sortedSegments.map(s => new Date(s.arrivalDate).getTime())));
+  const end = maxArrival > startOfDay(new Date()) ? maxArrival : startOfDay(new Date());
   
   const allDays = eachDayOfInterval({ start, end });
 
@@ -25,30 +26,46 @@ export function calculateDailyLocations(segments: TravelSegment[]): DailyLocatio
     // A segment is from departure to arrival.
     // If a day is between segments, we assume the user is in the arrival country of the previous segment.
     
-    // Find the segment that contains this day
-    const activeSegment = sortedSegments.find(s => 
-      isWithinInterval(day, { 
-        start: parseISO(s.departureDate), 
-        end: parseISO(s.arrivalDate) 
+    // Find ALL segments that cover this day (multiple countries possible in one day)
+    const activeSegments = sortedSegments.filter(s =>
+      isWithinInterval(day, {
+        start: parseISO(s.departureDate),
+        end: parseISO(s.arrivalDate),
       })
     );
 
-    if (activeSegment) {
-      // During travel, we'll just say they are in the arrival country for simplicity, 
-      // or we could handle "In Transit". Let's stick to arrival country.
-      dailyLocations.push({ date: dateStr, country: activeSegment.arrivalCountry });
+    if (activeSegments.length > 0) {
+      // Deduplicate and push one entry per unique country
+      const seen = new Set<string>();
+      activeSegments.forEach(s => {
+        if (!seen.has(s.arrivalCountry)) {
+          seen.add(s.arrivalCountry);
+          dailyLocations.push({ date: dateStr, country: s.arrivalCountry });
+        }
+      });
     } else {
-      // Find the last segment that ended before this day
+      // Find the last MULTI-day stay that ended before this day.
+      // Single-day entries (departureDate === arrivalDate) are point-in-time visits —
+      // they should NOT cascade their country into subsequent days.
       const lastSegment = [...sortedSegments]
         .reverse()
-        .find(s => parseISO(s.arrivalDate) < day);
-      
-      if (lastSegment) {
+        .find(s => {
+          const dep = parseISO(s.departureDate).getTime();
+          const arr = parseISO(s.arrivalDate).getTime();
+          return arr > dep && arr <= day.getTime();
+        });
+
+      // Only cascade into a gap if there is a FUTURE stay — i.e. this day sits
+      // between two recorded stays. After the last stay ends, show nothing.
+      const hasNextStay = sortedSegments.some(
+        s => parseISO(s.departureDate).getTime() > day.getTime()
+      );
+
+      if (lastSegment && hasNextStay) {
         dailyLocations.push({ date: dateStr, country: lastSegment.arrivalCountry });
-      } else {
-        // Before the first segment, they were in the departure country of the first segment
-        dailyLocations.push({ date: dateStr, country: sortedSegments[0].departureCountry });
       }
+      // If no multi-day stay covers or precedes this day (or there is no future stay),
+      // leave it blank (no entry).
     }
   });
 
