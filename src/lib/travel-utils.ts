@@ -1,4 +1,4 @@
-import { format, eachDayOfInterval, parseISO, isWithinInterval } from 'date-fns';
+import { format, eachDayOfInterval, parseISO, isWithinInterval, startOfDay } from 'date-fns';
 import { TravelSegment, DailyLocation } from '../types';
 
 export function calculateDailyLocations(segments: TravelSegment[]): DailyLocation[] {
@@ -13,7 +13,8 @@ export function calculateDailyLocations(segments: TravelSegment[]): DailyLocatio
   
   // We need a start and end range. Let's use the first departure and last arrival.
   const start = parseISO(sortedSegments[0].departureDate);
-  const end = parseISO(sortedSegments[sortedSegments.length - 1].arrivalDate);
+  const lastArrival = parseISO(sortedSegments[sortedSegments.length - 1].arrivalDate);
+  const end = lastArrival > startOfDay(new Date()) ? lastArrival : startOfDay(new Date());
   
   const allDays = eachDayOfInterval({ start, end });
 

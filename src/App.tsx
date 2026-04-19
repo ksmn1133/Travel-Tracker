@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { auth } from './firebase';
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { TravelSegment } from './types';
@@ -12,9 +12,10 @@ import { TaxCalculator } from './components/TaxCalculator';
 import { UserMenu } from './components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { Plane, Calendar, Plus, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
+import { Plane, Calendar, Plus, Globe, History, ShieldCheck, Home, Hotel, Calculator, Bell, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { calculateDailyLocations } from './lib/travel-utils';
 
 function LoadingScreen() {
   const [progress, setProgress] = useState(0);
@@ -119,7 +120,41 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [segments, setSegments] = useState<TravelSegment[]>([]);
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef<HTMLDivElement>(null);
   const isAdmin = user?.email === 'xiaoxia3691158@gmail.com';
+
+  useEffect(() => {
+    if (!bellOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [bellOpen]);
+
+  const warningCountries = React.useMemo(() => {
+    if (!segments.length) return [];
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const cutoff = new Date(today);
+    cutoff.setDate(cutoff.getDate() - 364); // last 365 days inclusive
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+
+    const dailyLocations = calculateDailyLocations(segments);
+    const counts: Record<string, number> = {};
+    dailyLocations.forEach(({ date, country }) => {
+      if (date >= cutoffStr && date <= todayStr) {
+        counts[country] = (counts[country] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .filter(([, days]) => days >= 160 && days <= 183)
+      .map(([country, days]) => ({ country, days }))
+      .sort((a, b) => b.days - a.days);
+  }, [segments]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -229,7 +264,49 @@ function App() {
             </div>
             <span className="font-bold text-xl tracking-tight">TravelTrack</span>
           </div>
-          <UserMenu user={user} onLogout={handleLogout} />
+          <div className="flex items-center gap-1">
+            <div className="relative" ref={bellRef}>
+              <button
+                onClick={() => setBellOpen(o => !o)}
+                className="relative p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-700"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {warningCountries.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
+                )}
+              </button>
+
+              {bellOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 z-50">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <span className="text-sm font-semibold text-slate-800">Notifications</span>
+                    <button onClick={() => setBellOpen(false)} className="text-slate-400 hover:text-slate-600">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {warningCountries.length === 0 ? (
+                    <p className="px-4 py-5 text-sm text-slate-500 text-center">No alerts at this time.</p>
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {warningCountries.map(({ country, days }) => (
+                        <li key={country} className="flex gap-3 px-4 py-3">
+                          <span className="mt-0.5 w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                          <p className="text-sm text-slate-700">
+                            <span className="font-semibold">{country}:</span> You have spent{' '}
+                            <span className="font-semibold text-red-600">{days} days</span> this year.
+                            Your residency days in that country is approaching 183 days. It may affect your tax residency in that country.
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+            <UserMenu user={user} onLogout={handleLogout} />
+          </div>
         </div>
       </header>
 
