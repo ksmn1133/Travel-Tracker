@@ -4,7 +4,6 @@ import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'f
 import { TravelSegment } from './types';
 import { travelService } from './services/travelService';
 import { CalendarView } from './components/CalendarView';
-import { SummaryView } from './components/SummaryView';
 import { AddTravelView } from './components/AddTravelView';
 import { TravelHistory } from './components/TravelHistory';
 import { ImportFlights } from './components/ImportFlights';
@@ -13,7 +12,7 @@ import { TaxCalculator } from './components/TaxCalculator';
 import { UserMenu } from './components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { Plane, Calendar, BarChart3, Plus, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
+import { Plane, Calendar, Plus, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
@@ -242,11 +241,7 @@ function App() {
                 <Calendar className="w-4 h-4 mr-2" />
                 Calendar
               </TabsTrigger>
-              <TabsTrigger value="summary" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Summary
-              </TabsTrigger>
-              <TabsTrigger value="add" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
+<TabsTrigger value="add" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Record
               </TabsTrigger>
@@ -280,17 +275,7 @@ function App() {
                 </motion.div>
               </TabsContent>
 
-              <TabsContent key="summary" value="summary">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                >
-                  <SummaryView segments={segments} />
-                </motion.div>
-              </TabsContent>
-
-              <TabsContent key="add" value="add">
+<TabsContent key="add" value="add">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
