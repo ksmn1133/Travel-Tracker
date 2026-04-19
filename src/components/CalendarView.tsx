@@ -463,7 +463,7 @@ function Globe({ visitedCountries }: GlobeProps) {
     /* sphere background — very light fill so the globe boundary is visible */
     ctx.beginPath();
     path(sphere);
-    ctx.fillStyle = 'rgba(241,245,249,0.55)'; // slate-100 at 55%
+    ctx.fillStyle = '#bfdbfe'; // blue-200 light blue ocean
     ctx.fill();
 
     /* graticule grid (subtle) */
