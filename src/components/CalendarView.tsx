@@ -42,7 +42,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
   const [quickEditCountry, setQuickEditCountry] = useState('');
   const [isSaving, setIsSaving]   = useState(false);
   const [sideTab, setSideTab]     = useState<'chart' | 'trips'>('chart');
-  const calendarRef = useRef<HTMLDivElement>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
 
   const dailyLocations = useMemo(() => calculateDailyLocations(segments), [segments]);
 
@@ -108,13 +108,50 @@ export function CalendarView({ segments }: CalendarViewProps) {
   const goToday = () => setCurrentMonth(startOfMonth(new Date()));
 
   const handleExportPDF = async () => {
-    if (!calendarRef.current) return;
+    const el = pdfRef.current;
+    if (!el) return;
+
+    // Temporarily expand all scrollable children so html2canvas captures full content
+    type SavedStyle = { el: HTMLElement; overflowY: string; height: string; maxHeight: string };
+    const saved: SavedStyle[] = [];
+    el.querySelectorAll<HTMLElement>('*').forEach(child => {
+      const cs = window.getComputedStyle(child);
+      if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') {
+        saved.push({ el: child, overflowY: child.style.overflowY, height: child.style.height, maxHeight: child.style.maxHeight });
+        child.style.overflowY = 'visible';
+        child.style.height    = 'auto';
+        child.style.maxHeight = 'none';
+      }
+    });
+    const savedMin = el.style.minHeight;
+    el.style.minHeight = '0';
+
     try {
-      const canvas = await html2canvas(calendarRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width:        el.scrollWidth,
+        height:       el.scrollHeight,
+        windowWidth:  el.scrollWidth,
+        windowHeight: el.scrollHeight,
+      });
+      const filename = viewMode === 'month'
+        ? `travel-${format(currentMonth, 'yyyy-MM')}.pdf`
+        : `travel-${currentYear}.pdf`;
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(`travel-calendar-${format(currentMonth, 'yyyy-MM')}.pdf`);
-    } catch (err) { console.error('PDF export failed', err); }
+      pdf.save(filename);
+    } catch (err) {
+      console.error('PDF export failed', err);
+    } finally {
+      saved.forEach(s => {
+        s.el.style.overflowY  = s.overflowY;
+        s.el.style.height     = s.height;
+        s.el.style.maxHeight  = s.maxHeight;
+      });
+      el.style.minHeight = savedMin;
+    }
   };
 
   const handleQuickEdit = (date: Date, country: string) => {
@@ -145,6 +182,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
 
   return (
     <div
+      ref={pdfRef}
       className="flex bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
       style={{ minHeight: '640px' }}
     >
@@ -207,7 +245,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
         </div>
 
         {/* Calendar body */}
-        <div className="flex-1 p-4 overflow-auto" ref={calendarRef}>
+        <div className="flex-1 p-4 overflow-auto">
           {viewMode === 'month' ? (
             <MonthView
               currentMonth={currentMonth}
@@ -352,59 +390,39 @@ function Globe({ visitedCountries }: GlobeProps) {
 
     ctx.clearRect(0, 0, SIZE, SIZE);
 
-    /* ocean */
+    /* sphere background — very light fill so the globe boundary is visible */
     ctx.beginPath();
     path(sphere);
-    const grad = ctx.createRadialGradient(
-      SIZE * 0.38, SIZE * 0.34, SIZE * 0.05,
-      SIZE * 0.5,  SIZE * 0.5,  scaleRef.current,
-    );
-    grad.addColorStop(0,   '#bfdbfe');
-    grad.addColorStop(0.55,'#3b82f6');
-    grad.addColorStop(1,   '#1e3a8a');
-    ctx.fillStyle = grad;
+    ctx.fillStyle = 'rgba(241,245,249,0.55)'; // slate-100 at 55%
     ctx.fill();
 
-    /* countries */
-    countries.forEach((feature: any) => {
-      const id = parseInt(feature.id, 10);
-      const visited = visitedIds.has(id);
-      ctx.beginPath();
-      path(feature);
-      ctx.fillStyle = visited ? '#f97316' : '#1d4ed8';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-      ctx.lineWidth = 0.4;
-      ctx.stroke();
-    });
-
-    /* graticule */
+    /* graticule grid (subtle) */
     const graticule = d3.geoGraticule()();
     ctx.beginPath();
     path(graticule);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = 'rgba(148,163,184,0.25)'; // slate-400 at 25%
     ctx.lineWidth = 0.5;
     ctx.stroke();
+
+    /* countries */
+    countries.forEach((feature: any) => {
+      const id      = parseInt(feature.id, 10);
+      const visited = visitedIds.has(id);
+      ctx.beginPath();
+      path(feature);
+      ctx.fillStyle   = visited ? '#3b82f6' : '#e2e8f0'; // blue-500 or slate-200
+      ctx.fill();
+      ctx.strokeStyle = visited ? 'rgba(255,255,255,0.7)' : 'rgba(148,163,184,0.4)';
+      ctx.lineWidth   = 0.4;
+      ctx.stroke();
+    });
 
     /* outer ring */
     ctx.beginPath();
     path(sphere);
-    ctx.strokeStyle = '#93c5fd';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#cbd5e1'; // slate-300
+    ctx.lineWidth   = 1;
     ctx.stroke();
-
-    /* shine */
-    ctx.beginPath();
-    path(sphere);
-    const shine = ctx.createRadialGradient(
-      SIZE * 0.32, SIZE * 0.28, 0,
-      SIZE * 0.42, SIZE * 0.38, scaleRef.current * 0.85,
-    );
-    shine.addColorStop(0,   'rgba(255,255,255,0.28)');
-    shine.addColorStop(0.5, 'rgba(255,255,255,0.04)');
-    shine.addColorStop(1,   'rgba(255,255,255,0)');
-    ctx.fillStyle = shine;
-    ctx.fill();
   }, [visitedIds]);
 
   /* auto-rotate */
