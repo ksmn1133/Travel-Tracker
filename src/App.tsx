@@ -10,10 +10,12 @@ import { TravelHistory } from './components/TravelHistory';
 import { ImportFlights } from './components/ImportFlights';
 import { AdminDashboard } from './components/AdminDashboard';
 import { TaxCalculator } from './components/TaxCalculator';
+import { UserMenu } from './components/UserMenu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
-import { Plane, Calendar, BarChart3, Plus, LogOut, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
+import { Plane, Calendar, BarChart3, Plus, Globe, History, ShieldCheck, Home, Hotel, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 function LoadingScreen() {
   const [progress, setProgress] = useState(0);
@@ -114,7 +116,7 @@ function LoadingScreen() {
   );
 }
 
-export default function App() {
+function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [segments, setSegments] = useState<TravelSegment[]>([]);
@@ -228,15 +230,7 @@ export default function App() {
             </div>
             <span className="font-bold text-xl tracking-tight">TravelTrack</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium">{user.displayName}</p>
-              <p className="text-xs text-slate-500">{user.email}</p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="text-slate-500 hover:text-red-600">
-              <LogOut className="w-5 h-5" />
-            </Button>
-          </div>
+          <UserMenu user={user} onLogout={handleLogout} />
         </div>
       </header>
 
@@ -341,5 +335,13 @@ export default function App() {
         </Tabs>
       </main>
     </div>
+  );
+}
+
+export default function AppWithProviders() {
+  return (
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
   );
 }

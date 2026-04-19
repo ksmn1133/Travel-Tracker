@@ -22,7 +22,15 @@ const NON_RESIDENT_SALARY_COLS = {
   remarks: 14,         // 备注
 };
 
-export async function exportNonResidentSalaryTemplate(gross: number): Promise<void> {
+
+export interface ProfileSnapshot {
+  firstName: string;
+  lastName: string;
+  documentType: string;
+  documentNumber: string;
+}
+
+export async function exportNonResidentSalaryTemplate(gross: number, profile?: ProfileSnapshot): Promise<void> {
   // Fetch the template from public folder
   const res = await fetch('/templates/非居民工资薪金申报模板.xls');
   const arrayBuffer = await res.arrayBuffer();
@@ -44,10 +52,16 @@ export async function exportNonResidentSalaryTemplate(gross: number): Promise<vo
     dataRow[addr] = { v: value, t: type };
   }
 
-  setCell(cols.employeeId,    '',    's'); // 工号 — blank
-  setCell(cols.name,          '',    's'); // 姓名 — blank
-  setCell(cols.certType,      '',    's'); // 证件类型 — blank
-  setCell(cols.certNo,        '',    's'); // 证件号码 — blank
+  const fullName = profile
+    ? [profile.firstName, profile.lastName].filter(Boolean).join(', ')
+    : '';
+  const certType = profile?.documentType ?? '';
+  const certNo   = profile?.documentNumber ?? '';
+
+  setCell(cols.employeeId,    '',       's'); // 工号 — blank
+  setCell(cols.name,          fullName, 's'); // 姓名 ← Last + First name
+  setCell(cols.certType,      certType, 's'); // 证件类型 ← mapped from profile
+  setCell(cols.certNo,        certNo,   's'); // 证件号码 ← from profile
   setCell(cols.formula,       '',    's'); // 适用公式 — blank
   setCell(cols.income,        gross, 'n'); // 收入 ← calculated gross
   setCell(cols.daysInChina,   '',    's'); // 境内工作天数 — blank

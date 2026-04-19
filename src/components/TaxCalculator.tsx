@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Calculator, TrendingDown, Wallet, Receipt, Download } from 'lucide-react';
-import { exportTaxDeclaration, exportNonResidentSalaryTemplate } from '../lib/taxExport';
+import { exportTaxDeclaration, exportNonResidentSalaryTemplate, ProfileSnapshot } from '../lib/taxExport';
 import { Button } from './ui/button';
+import { auth } from '../firebase';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 type Residency = 'resident' | 'non-resident';
 type IncomeType = 'salary' | 'service' | 'royalty-author' | 'royalty-ip' | 'bonus' | 'equity';
@@ -322,6 +325,19 @@ export function TaxCalculator() {
   const [monthsDeclaredStr, setMonthsDeclaredStr] = useState('1');
   const [taxPaidStr, setTaxPaidStr] = useState('');
 
+  // Load profile for pre-filling the export
+  const [exportProfile, setExportProfile] = useState<ProfileSnapshot | undefined>();
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    getDoc(doc(db, 'users', uid)).then((snap) => {
+      if (snap.exists()) {
+        const p = snap.data()?.profile;
+        if (p) setExportProfile({ firstName: p.firstName ?? '', lastName: p.lastName ?? '', documentType: p.documentType ?? '', documentNumber: p.documentNumber ?? '' });
+      }
+    });
+  }, []);
+
   const isResidentSalary = residency === 'resident' && incomeType === 'salary';
   const isEquity = incomeType === 'equity';
   const gross = p(amountStr);
@@ -576,7 +592,7 @@ export function TaxCalculator() {
             <Button
               onClick={() => {
                 if (residency === 'non-resident' && incomeType === 'salary') {
-                  exportNonResidentSalaryTemplate(gross);
+                  exportNonResidentSalaryTemplate(gross, exportProfile);
                 } else {
                   exportTaxDeclaration(
                     residency, incomeType, gross, result,

@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/>
+      <stop offset="100%" style="stop-color:#eff6ff"/>
+    </linearGradient>
+    <linearGradient id="accentBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1d4ed8"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+    <linearGradient id="cardBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1d4ed8"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="cardPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="cardGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669"/>
+      <stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1d4ed8" flood-opacity="0.12"/>
+    </filter>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="675" fill="url(#bgGrad)"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="6" fill="url(#accentBar)"/>
+
+  <!-- Subtle dot pattern -->
+  <g fill="#1d4ed8" opacity="0.06">
+    <circle cx="60" cy="60" r="2"/><circle cx="120" cy="60" r="2"/><circle cx="180" cy="60" r="2"/><circle cx="240" cy="60" r="2"/><circle cx="300" cy="60" r="2"/><circle cx="360" cy="60" r="2"/><circle cx="420" cy="60" r="2"/><circle cx="480" cy="60" r="2"/><circle cx="540" cy="60" r="2"/><circle cx="600" cy="60" r="2"/><circle cx="660" cy="60" r="2"/><circle cx="720" cy="60" r="2"/><circle cx="780" cy="60" r="2"/><circle cx="840" cy="60" r="2"/><circle cx="900" cy="60" r="2"/><circle cx="960" cy="60" r="2"/><circle cx="1020" cy="60" r="2"/><circle cx="1080" cy="60" r="2"/><circle cx="1140" cy="60" r="2"/>
+    <circle cx="60" cy="120" r="2"/><circle cx="120" cy="120" r="2"/><circle cx="180" cy="120" r="2"/><circle cx="240" cy="120" r="2"/><circle cx="300" cy="120" r="2"/><circle cx="360" cy="120" r="2"/><circle cx="420" cy="120" r="2"/><circle cx="480" cy="120" r="2"/><circle cx="540" cy="120" r="2"/><circle cx="600" cy="120" r="2"/><circle cx="660" cy="120" r="2"/><circle cx="720" cy="120" r="2"/><circle cx="780" cy="120" r="2"/><circle cx="840" cy="120" r="2"/><circle cx="900" cy="120" r="2"/><circle cx="960" cy="120" r="2"/><circle cx="1020" cy="120" r="2"/><circle cx="1080" cy="120" r="2"/><circle cx="1140" cy="120" r="2"/>
+    <circle cx="60" cy="180" r="2"/><circle cx="120" cy="180" r="2"/><circle cx="180" cy="180" r="2"/><circle cx="240" cy="180" r="2"/><circle cx="300" cy="180" r="2"/><circle cx="360" cy="180" r="2"/><circle cx="420" cy="180" r="2"/><circle cx="480" cy="180" r="2"/><circle cx="540" cy="180" r="2"/><circle cx="600" cy="180" r="2"/><circle cx="660" cy="180" r="2"/><circle cx="720" cy="180" r="2"/><circle cx="780" cy="180" r="2"/><circle cx="840" cy="180" r="2"/><circle cx="900" cy="180" r="2"/><circle cx="960" cy="180" r="2"/><circle cx="1020" cy="180" r="2"/><circle cx="1080" cy="180" r="2"/><circle cx="1140" cy="180" r="2"/>
+    <circle cx="60" cy="240" r="2"/><circle cx="120" cy="240" r="2"/><circle cx="180" cy="240" r="2"/><circle cx="240" cy="240" r="2"/><circle cx="300" cy="240" r="2"/><circle cx="360" cy="240" r="2"/><circle cx="420" cy="240" r="2"/><circle cx="480" cy="240" r="2"/><circle cx="540" cy="240" r="2"/><circle cx="600" cy="240" r="2"/><circle cx="660" cy="240" r="2"/><circle cx="720" cy="240" r="2"/><circle cx="780" cy="240" r="2"/><circle cx="840" cy="240" r="2"/><circle cx="900" cy="240" r="2"/><circle cx="960" cy="240" r="2"/><circle cx="1020" cy="240" r="2"/><circle cx="1080" cy="240" r="2"/><circle cx="1140" cy="240" r="2"/>
+    <circle cx="60" cy="300" r="2"/><circle cx="120" cy="300" r="2"/><circle cx="180" cy="300" r="2"/><circle cx="240" cy="300" r="2"/><circle cx="300" cy="300" r="2"/><circle cx="360" cy="300" r="2"/><circle cx="420" cy="300" r="2"/><circle cx="480" cy="300" r="2"/><circle cx="540" cy="300" r="2"/><circle cx="600" cy="300" r="2"/>
+  </g>
+
+  <!-- ─── LEFT PANEL (hero dark block) ─── -->
+  <rect x="0" y="6" width="480" height="669" fill="url(#heroGrad)"/>
+
+  <!-- Logo mark -->
+  <rect x="52" y="60" width="48" height="48" rx="12" fill="#ffffff" opacity="0.15"/>
+  <!-- Plane in logo -->
+  <g transform="translate(76, 84) rotate(-35)">
+    <path d="M0,-10 L3,-4 L13,-4 L13,-1 L3,0 L4,7 L7,7 L7,9 L0,8 L-7,9 L-7,7 L-4,7 L-3,0 L-13,-1 L-13,-4 L-3,-4 Z" fill="#ffffff"/>
+  </g>
+  <text x="112" y="92" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="-0.5">TravelTrack</text>
+  <text x="112" y="110" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#93c5fd" letter-spacing="2">PROFESSIONAL EDITION</text>
+
+  <!-- Divider -->
+  <line x1="52" y1="138" x2="428" y2="138" stroke="#ffffff" stroke-opacity="0.15" stroke-width="1"/>
+
+  <!-- Hero headline -->
+  <text x="52" y="196" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" fill="#ffffff" letter-spacing="-1">Smart Travel &amp;</text>
+  <text x="52" y="244" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" fill="#ffffff" letter-spacing="-1">Tax Management</text>
+  <text x="52" y="292" font-family="'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="800" fill="#93c5fd" letter-spacing="-1">for Global Talents</text>
+
+  <!-- Sub headline -->
+  <text x="52" y="338" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#bfdbfe" letter-spacing="0.2">Track days. Calculate taxes. File returns.</text>
+  <text x="52" y="360" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#bfdbfe" letter-spacing="0.2">All in one platform built for non-residents</text>
+  <text x="52" y="382" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#bfdbfe" letter-spacing="0.2">working in China.</text>
+
+  <!-- Stat pills -->
+  <rect x="52" y="414" width="118" height="56" rx="10" fill="#ffffff" opacity="0.1"/>
+  <text x="111" y="438" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle">6</text>
+  <text x="111" y="458" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#93c5fd" text-anchor="middle">Income Types</text>
+
+  <rect x="182" y="414" width="118" height="56" rx="10" fill="#ffffff" opacity="0.1"/>
+  <text x="241" y="438" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="241" y="458" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#93c5fd" text-anchor="middle">Tax Residencies</text>
+
+  <rect x="312" y="414" width="118" height="56" rx="10" fill="#ffffff" opacity="0.1"/>
+  <text x="371" y="438" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" text-anchor="middle">1-click</text>
+  <text x="371" y="458" font-family="'Helvetica Neue', Arial, sans-serif" font-size="10" fill="#93c5fd" text-anchor="middle">Excel Export</text>
+
+  <!-- CTA button area -->
+  <rect x="52" y="494" width="200" height="44" rx="22" fill="#3b82f6"/>
+  <text x="152" y="521" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">Try it Free →</text>
+
+  <rect x="264" y="494" width="164" height="44" rx="22" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.5"/>
+  <text x="346" y="521" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="500" fill="#ffffff" text-anchor="middle" opacity="0.8">View on GitHub</text>
+
+  <!-- Bottom left: URL -->
+  <text x="52" y="630" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#93c5fd" opacity="0.7">github.com/ksmn1133/Travel-Tracker</text>
+
+  <!-- ─── RIGHT PANEL ─── -->
+
+  <!-- Feature card 1: Tax Calculator -->
+  <rect x="512" y="40" width="320" height="170" rx="16" fill="#ffffff" filter="url(#cardShadow)"/>
+  <!-- Blue icon bg -->
+  <rect x="532" y="62" width="44" height="44" rx="10" fill="url(#cardBlue)"/>
+  <!-- Calculator icon -->
+  <rect x="541" y="69" width="26" height="28" rx="4" fill="none" stroke="#ffffff" stroke-width="1.8"/>
+  <line x1="541" y1="77" x2="567" y2="77" stroke="#ffffff" stroke-width="1.8"/>
+  <rect x="545" y="81" width="5" height="4" rx="1" fill="#ffffff"/>
+  <rect x="553" y="81" width="5" height="4" rx="1" fill="#ffffff"/>
+  <rect x="561" y="81" width="5" height="4" rx="1" fill="#ffffff"/>
+  <rect x="545" y="89" width="5" height="4" rx="1" fill="#ffffff"/>
+  <rect x="553" y="89" width="5" height="4" rx="1" fill="#ffffff"/>
+  <rect x="561" y="89" width="8" height="4" rx="1" fill="#ffffff"/>
+  <!-- Text -->
+  <text x="588" y="82" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1e293b">个人所得税计算器</text>
+  <text x="588" y="101" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#64748b">China IIT Calculator</text>
+  <!-- Description -->
+  <text x="532" y="136" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">Resident &amp; non-resident rules. Supports</text>
+  <text x="532" y="154" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">salary, bonus, equity &amp; royalty income.</text>
+  <!-- Tag -->
+  <rect x="532" y="168" width="80" height="22" rx="11" fill="#eff6ff"/>
+  <text x="572" y="183" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">累计预扣法</text>
+  <rect x="622" y="168" width="80" height="22" rx="11" fill="#eff6ff"/>
+  <text x="662" y="183" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">股权激励</text>
+
+  <!-- Feature card 2: Travel Calendar -->
+  <rect x="848" y="40" width="304" height="170" rx="16" fill="#ffffff" filter="url(#cardShadow)"/>
+  <rect x="868" y="62" width="44" height="44" rx="10" fill="url(#cardPurple)"/>
+  <!-- Calendar icon -->
+  <rect x="876" y="69" width="28" height="26" rx="3" fill="none" stroke="#ffffff" stroke-width="1.8"/>
+  <line x1="876" y1="77" x2="904" y2="77" stroke="#ffffff" stroke-width="1.8"/>
+  <line x1="884" y1="65" x2="884" y2="71" stroke="#ffffff" stroke-width="1.8"/>
+  <line x1="896" y1="65" x2="896" y2="71" stroke="#ffffff" stroke-width="1.8"/>
+  <rect x="880" y="81" width="5" height="5" rx="1" fill="#ffffff"/>
+  <rect x="889" y="81" width="5" height="5" rx="1" fill="#ffffff"/>
+  <rect x="880" y="89" width="5" height="5" rx="1" fill="#ffffff"/>
+  <text x="924" y="82" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1e293b">Travel Calendar</text>
+  <text x="924" y="101" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#64748b">Day-by-day tracking</text>
+  <text x="868" y="136" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">Visual calendar with China / overseas</text>
+  <text x="868" y="154" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">day tracking and residency summary.</text>
+  <rect x="868" y="168" width="90" height="22" rx="11" fill="#f5f3ff"/>
+  <text x="913" y="183" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#6366f1" text-anchor="middle" font-weight="600">183-Day Rule</text>
+
+  <!-- Feature card 3: Excel Export -->
+  <rect x="512" y="230" width="304" height="160" rx="16" fill="#ffffff" filter="url(#cardShadow)"/>
+  <rect x="532" y="252" width="44" height="44" rx="10" fill="url(#cardGreen)"/>
+  <!-- Download icon -->
+  <rect x="540" y="259" width="28" height="28" rx="3" fill="none" stroke="#ffffff" stroke-width="1.8"/>
+  <line x1="554" y1="265" x2="554" y2="277" stroke="#ffffff" stroke-width="1.8"/>
+  <polyline points="548,273 554,280 560,273" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>
+  <line x1="543" y1="283" x2="565" y2="283" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="588" y="272" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1e293b">申报表导出</text>
+  <text x="588" y="291" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#64748b">One-click Excel Export</text>
+  <text x="532" y="322" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">Auto-fills official 月度个人所得税</text>
+  <text x="532" y="340" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">工资薪金申报导入表 template.</text>
+  <rect x="532" y="356" width="96" height="22" rx="11" fill="#f0fdf4"/>
+  <text x="580" y="371" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#059669" text-anchor="middle" font-weight="600">官方模板 .xls</text>
+
+  <!-- Feature card 4: Trip History -->
+  <rect x="828" y="230" width="324" height="160" rx="16" fill="#ffffff" filter="url(#cardShadow)"/>
+  <rect x="848" y="252" width="44" height="44" rx="10" fill="url(#accentBar)"/>
+  <!-- History / list icon -->
+  <line x1="858" y1="268" x2="882" y2="268" stroke="#ffffff" stroke-width="2"/>
+  <line x1="858" y1="276" x2="882" y2="276" stroke="#ffffff" stroke-width="2"/>
+  <line x1="858" y1="284" x2="874" y2="284" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="856" cy="268" r="2" fill="#ffffff"/>
+  <circle cx="856" cy="276" r="2" fill="#ffffff"/>
+  <circle cx="856" cy="284" r="2" fill="#ffffff"/>
+  <text x="904" y="272" font-family="'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1e293b">Travel History</text>
+  <text x="904" y="291" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#64748b">Full trip records</text>
+  <text x="848" y="322" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">Log flights and stays. Import via CSV.</text>
+  <text x="848" y="340" font-family="'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#475569">AI-powered location auto-fill.</text>
+  <rect x="848" y="356" width="70" height="22" rx="11" fill="#eff6ff"/>
+  <text x="883" y="371" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">CSV Import</text>
+  <rect x="928" y="356" width="60" height="22" rx="11" fill="#eff6ff"/>
+  <text x="958" y="371" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">Gemini AI</text>
+
+  <!-- ─── BOTTOM SECTION ─── -->
+
+  <!-- Tech stack bar -->
+  <rect x="512" y="412" width="640" height="64" rx="16" fill="#ffffff" filter="url(#shadow)"/>
+  <text x="540" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#94a3b8" font-weight="600" letter-spacing="1">BUILT WITH</text>
+  <!-- Stack badges -->
+  <rect x="620" y="423" width="64" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="652" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">React 19</text>
+  <rect x="694" y="423" width="80" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="734" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Tailwind v4</text>
+  <rect x="784" y="423" width="72" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="820" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Firebase</text>
+  <rect x="866" y="423" width="74" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="903" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">Gemini AI</text>
+  <rect x="950" y="423" width="52" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="976" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">xlsx</text>
+  <rect x="1012" y="423" width="56" height="26" rx="6" fill="#f1f5f9"/>
+  <text x="1040" y="440" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" font-weight="600">shadcn</text>
+
+  <text x="540" y="464" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#94a3b8">Open-source · Free to use</text>
+  <text x="1100" y="464" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">⭐ Star on GitHub</text>
+
+  <!-- Quote / value prop -->
+  <rect x="512" y="496" width="640" height="80" rx="16" fill="url(#accentBar)"/>
+  <text x="532" y="527" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#ffffff" font-style="italic">"Designed for expatriates, assignees, and global professionals</text>
+  <text x="532" y="549" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="300" fill="#ffffff" font-style="italic">navigating China's individual income tax system."</text>
+  <text x="1140" y="565" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#bfdbfe" text-anchor="middle">— TravelTrack</text>
+
+  <!-- Bottom footer line -->
+  <rect x="512" y="590" width="640" height="1" fill="#e2e8f0"/>
+  <text x="512" y="620" font-family="'Helvetica Neue', Arial, sans-serif" font-size="12" fill="#94a3b8">🌐 github.com/ksmn1133/Travel-Tracker</text>
+  <rect x="900" y="606" width="80" height="24" rx="12" fill="#eff6ff"/>
+  <text x="940" y="622" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">#TaxTech</text>
+  <rect x="990" y="606" width="100" height="24" rx="12" fill="#eff6ff"/>
+  <text x="1040" y="622" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#1d4ed8" text-anchor="middle" font-weight="600">#个人所得税</text>
+  <rect x="1100" y="606" width="50" height="24" rx="12" fill="#eff6ff"/>
+  <text x="1125" y="622" font-family="'Helvetica Neue', Arial, sans-serif" font-size="11" fill="#6366f1" text-anchor="middle" font-weight="600">#China</text>
+
+  <!-- Decorative bottom right circle -->
+  <circle cx="1152" cy="675" r="120" fill="#3b82f6" opacity="0.05"/>
+  <circle cx="1152" cy="675" r="80" fill="#3b82f6" opacity="0.05"/>
+</svg>
