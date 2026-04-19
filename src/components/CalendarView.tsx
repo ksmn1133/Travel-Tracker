@@ -19,8 +19,7 @@ import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { travelService } from '../services/travelService';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import * as XLSX from 'xlsx';
 
 const DAYS_SHORT  = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DAYS_TINY   = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -41,8 +40,7 @@ export function CalendarView({ segments }: CalendarViewProps) {
   const [quickEditDate, setQuickEditDate]       = useState<Date | null>(null);
   const [quickEditCountry, setQuickEditCountry] = useState('');
   const [isSaving, setIsSaving]   = useState(false);
-  const [sideTab, setSideTab]     = useState<'chart' | 'trips'>('chart');
-  const pdfRef = useRef<HTMLDivElement>(null);
+  const [sideTab, setSideTab] = useState<'chart' | 'trips'>('chart');
 
   const dailyLocations = useMemo(() => calculateDailyLocations(segments), [segments]);
 
@@ -107,50 +105,123 @@ export function CalendarView({ segments }: CalendarViewProps) {
   };
   const goToday = () => setCurrentMonth(startOfMonth(new Date()));
 
-  const handleExportPDF = async () => {
-    const el = pdfRef.current;
-    if (!el) return;
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
 
-    // Temporarily expand all scrollable children so html2canvas captures full content
-    type SavedStyle = { el: HTMLElement; overflowY: string; height: string; maxHeight: string };
-    const saved: SavedStyle[] = [];
-    el.querySelectorAll<HTMLElement>('*').forEach(child => {
-      const cs = window.getComputedStyle(child);
-      if (cs.overflowY === 'auto' || cs.overflowY === 'scroll') {
-        saved.push({ el: child, overflowY: child.style.overflowY, height: child.style.height, maxHeight: child.style.maxHeight });
-        child.style.overflowY = 'visible';
-        child.style.height    = 'auto';
-        child.style.maxHeight = 'none';
+    if (viewMode === 'month') {
+      /* ── Sheet 1: Daily Calendar ── */
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd   = endOfMonth(currentMonth);
+      const calRows: (string | number)[][] = [
+        ['Date', 'Weekday', 'Country / Location'],
+      ];
+      eachDayOfInterval({ start: monthStart, end: monthEnd }).forEach(date => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        calRows.push([dateStr, format(date, 'EEEE'), locationMap[dateStr] ?? '']);
+      });
+      const calSheet = XLSX.utils.aoa_to_sheet(calRows);
+      calSheet['!cols'] = [{ wch: 14 }, { wch: 12 }, { wch: 24 }];
+      XLSX.utils.book_append_sheet(wb, calSheet, 'Calendar');
+
+      /* ── Sheet 2: Country Summary ── */
+      const totalDaysInMonth = getDaysInMonth(currentMonth);
+      const summaryRows: (string | number)[][] = [
+        ['Country', `Days in ${MONTH_NAMES[currentMonth.getMonth()]} ${currentYear}`, `Total Days in Month (${totalDaysInMonth})`, 'Percentage'],
+      ];
+      filteredStats.forEach(({ country, days }) => {
+        summaryRows.push([country, days, totalDaysInMonth, `${((days / totalDaysInMonth) * 100).toFixed(1)}%`]);
+      });
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+      summarySheet['!cols'] = [{ wch: 22 }, { wch: 22 }, { wch: 26 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(wb, summarySheet, 'Country Summary');
+
+      /* ── Sheet 3: Trip Records ── */
+      if (filteredTrips.length > 0) {
+        const tripRows: (string | number)[][] = [
+          ['Departure Date', 'Arrival Date', 'From', 'To'],
+        ];
+        filteredTrips.forEach(t => {
+          tripRows.push([
+            format(parseISO(t.departureDate), 'yyyy-MM-dd'),
+            format(parseISO(t.arrivalDate),   'yyyy-MM-dd'),
+            t.departureCountry,
+            t.arrivalCountry,
+          ]);
+        });
+        const tripSheet = XLSX.utils.aoa_to_sheet(tripRows);
+        tripSheet['!cols'] = [{ wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 22 }];
+        XLSX.utils.book_append_sheet(wb, tripSheet, 'Trip Records');
       }
-    });
-    const savedMin = el.style.minHeight;
-    el.style.minHeight = '0';
 
-    try {
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        width:        el.scrollWidth,
-        height:       el.scrollHeight,
-        windowWidth:  el.scrollWidth,
-        windowHeight: el.scrollHeight,
+      XLSX.writeFile(wb, `travel-${format(currentMonth, 'yyyy-MM')}.xlsx`);
+
+    } else {
+      /* ── Sheet 1: Annual Calendar (all days) ── */
+      const yearStart = new Date(currentYear, 0, 1);
+      const yearEnd   = new Date(currentYear, 11, 31);
+      const calRows: (string | number)[][] = [
+        ['Date', 'Month', 'Weekday', 'Country / Location'],
+      ];
+      eachDayOfInterval({ start: yearStart, end: yearEnd }).forEach(date => {
+        const dateStr = format(date, 'yyyy-MM-dd');
+        calRows.push([dateStr, MONTH_NAMES[date.getMonth()], format(date, 'EEEE'), locationMap[dateStr] ?? '']);
       });
-      const filename = viewMode === 'month'
-        ? `travel-${format(currentMonth, 'yyyy-MM')}.pdf`
-        : `travel-${currentYear}.pdf`;
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(filename);
-    } catch (err) {
-      console.error('PDF export failed', err);
-    } finally {
-      saved.forEach(s => {
-        s.el.style.overflowY  = s.overflowY;
-        s.el.style.height     = s.height;
-        s.el.style.maxHeight  = s.maxHeight;
+      const calSheet = XLSX.utils.aoa_to_sheet(calRows);
+      calSheet['!cols'] = [{ wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 24 }];
+      XLSX.utils.book_append_sheet(wb, calSheet, 'Annual Calendar');
+
+      /* ── Sheet 2: Annual Summary ── */
+      const summaryRows: (string | number)[][] = [
+        ['Country', 'Days in Year', '183-Day Threshold', '% of Threshold', 'Meets Resident Threshold?'],
+      ];
+      filteredStats.forEach(({ country, days }) => {
+        summaryRows.push([
+          country,
+          days,
+          183,
+          `${((days / 183) * 100).toFixed(1)}%`,
+          days >= 183 ? 'Yes' : 'No',
+        ]);
       });
-      el.style.minHeight = savedMin;
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+      summarySheet['!cols'] = [{ wch: 22 }, { wch: 16 }, { wch: 20 }, { wch: 18 }, { wch: 26 }];
+      XLSX.utils.book_append_sheet(wb, summarySheet, 'Annual Summary');
+
+      /* ── Sheet 3: Monthly Breakdown ── */
+      const monthlyRows: (string | number)[][] = [['Month', 'Country', 'Days']];
+      MONTH_NAMES.forEach((name, idx) => {
+        const prefix = `${currentYear}-${String(idx + 1).padStart(2, '0')}`;
+        const counts: Record<string, number> = {};
+        (Object.entries(locationMap) as [string, string][]).forEach(([date, country]) => {
+          if (date.startsWith(prefix)) counts[country] = (counts[country] || 0) + 1;
+        });
+        Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([country, days]) => monthlyRows.push([name, country, days]));
+      });
+      const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyRows);
+      monthlySheet['!cols'] = [{ wch: 14 }, { wch: 22 }, { wch: 10 }];
+      XLSX.utils.book_append_sheet(wb, monthlySheet, 'Monthly Breakdown');
+
+      /* ── Sheet 4: Trip Records ── */
+      if (filteredTrips.length > 0) {
+        const tripRows: (string | number)[][] = [
+          ['Departure Date', 'Arrival Date', 'From', 'To'],
+        ];
+        filteredTrips.forEach(t => {
+          tripRows.push([
+            format(parseISO(t.departureDate), 'yyyy-MM-dd'),
+            format(parseISO(t.arrivalDate),   'yyyy-MM-dd'),
+            t.departureCountry,
+            t.arrivalCountry,
+          ]);
+        });
+        const tripSheet = XLSX.utils.aoa_to_sheet(tripRows);
+        tripSheet['!cols'] = [{ wch: 16 }, { wch: 16 }, { wch: 22 }, { wch: 22 }];
+        XLSX.utils.book_append_sheet(wb, tripSheet, 'Trip Records');
+      }
+
+      XLSX.writeFile(wb, `travel-${currentYear}.xlsx`);
     }
   };
 
@@ -182,7 +253,6 @@ export function CalendarView({ segments }: CalendarViewProps) {
 
   return (
     <div
-      ref={pdfRef}
       className="flex bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
       style={{ minHeight: '640px' }}
     >
@@ -234,12 +304,12 @@ export function CalendarView({ segments }: CalendarViewProps) {
               Today
             </button>
             <button
-              onClick={handleExportPDF}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-400 border border-slate-200 bg-white rounded-lg hover:border-blue-300 transition-colors"
-              title="Export PDF"
+              onClick={handleExportExcel}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-400 border border-slate-200 bg-white rounded-lg hover:border-green-400 hover:text-green-600 transition-colors"
+              title="Export Excel"
             >
               <Download className="w-3.5 h-3.5" />
-              PDF
+              Excel
             </button>
           </div>
         </div>
