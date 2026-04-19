@@ -1,4 +1,4 @@
-![TravelTrack Poster](poster.svg)
+
 
 #Self Intro 大家好我是Shawn Xiao, 前四大个税组员工。因为工作涉及到global mobility的个税，Vibe coding 开发了这款个税相关的app。希望各位前辈多给提提意见。 目前在看新的职业发展机会，希望大佬可以捞一下我。💗 邮箱xx627085476@outlook.com
 
@@ -7,7 +7,7 @@
 1. 主要针对无住所个人在中国的个人所得税问题：居民身份的判定（6年提醒），月度个人所得税计算（详细计算公式），月度申报数据生成(完成了非居民工资薪金申报表），年度居民转非居民计算及申报补税，年度居民汇算清缴。
 2. 工资相关数据的收集。
 
-
+![TravelTrack Poster](poster.svg)
 
 <div align="center">
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
